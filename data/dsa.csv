@@ -1,0 +1,11 @@
+Question,Option1,Option2,Option3,Option4,Answer
+What does DSA stand for?,Data Structures and Algorithms,Digital Signal Analysis,Data Science and Analytics,Dynamic System Architecture,1
+Which data structure uses LIFO principle?,Queue,Stack,Tree,Graph,2
+What is the time complexity of Binary Search?,O(n),O(n log n),O(log n),O(1),3
+Which sorting algorithm has best average case O(n log n)?,Bubble Sort,Selection Sort,Merge Sort,Insertion Sort,3
+What is a linked list?,Array with fixed size,Collection of nodes with pointers,Hash table,Binary tree,2
+Which traversal visits root first?,Inorder,Postorder,Preorder,Level Order,3
+What is the maximum number of nodes in a binary tree of height h?,2h,2h+1 - 1,h*2,h+1,2
+Stack overflow occurs when?,Stack is empty,Stack exceeds its memory limit,Queue is full,Array is full,2
+Which data structure is used in BFS?,Stack,Queue,Tree,Graph,2
+What is a hash collision?,Two keys map to same index,Hash function fails,Array overflow,Null pointer error,1

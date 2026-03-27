@@ -1,1 +1,730 @@
-hi
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>College Buddy – Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── ROOT ── */
+:root{
+  --navy:#1b3a5c;--green:#52a823;--green2:#3d8019;
+  --gold:#f5a623;--bg:#f0f4f8;--red:#ef4444;--red2:#dc2626;--blue:#3b82f6;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);min-height:100vh;padding-bottom:2.5rem;}
+
+/* ── NAV ── */
+nav{background:#fff;position:sticky;top:0;z-index:200;
+    box-shadow:0 2px 12px rgba(27,58,92,.1);border-bottom:1.5px solid #e8edf3;}
+.nav-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;
+           gap:.7rem;padding:.45rem 1rem;}
+.nav-logo{height:40px;object-fit:contain;flex-shrink:0;padding:2px;}
+.nav-title{font-family:'Nunito',sans-serif;font-weight:900;color:var(--navy);font-size:.95rem;flex:1;}
+.nav-badge{background:var(--gold);color:var(--navy);font-family:'Nunito',sans-serif;
+           font-weight:800;font-size:.68rem;padding:.22rem .65rem;border-radius:99px;white-space:nowrap;}
+
+/* ── SCREENS ── */
+.screen{display:none;max-width:640px;margin:0 auto;padding:1.25rem 1rem 2rem;}
+.screen.active{display:block;animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SHARED CARD ── */
+.card{background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(27,58,92,.09);overflow:hidden;margin-bottom:1rem;}
+.card-body{padding:1.5rem 1.25rem;}
+@media(min-width:500px){.card-body{padding:1.75rem;}}
+
+/* ── HERO STRIP ── */
+.hero-strip{background:linear-gradient(135deg,#1b3a5c 0%,#1e4d7a 50%,#1a5e38 100%);
+            padding:1.5rem 1rem 1.75rem;text-align:center;position:relative;overflow:hidden;margin-bottom:1rem;}
+.hero-strip::after{content:'{ }';position:absolute;font-size:9rem;font-family:'Nunito',sans-serif;
+                   font-weight:900;color:rgba(255,255,255,.04);right:-1rem;bottom:-1.5rem;pointer-events:none;line-height:1;}
+.chip{display:inline-flex;align-items:center;gap:.3rem;background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:.24rem .8rem;
+      color:#a8e063;font-size:.72rem;font-weight:600;margin-bottom:.55rem;}
+.hero-strip h1{font-family:'Nunito',sans-serif;font-weight:900;color:#fff;
+               font-size:clamp(1.4rem,5vw,1.9rem);line-height:1.2;}
+.hero-strip h1 em{color:var(--gold);font-style:normal;}
+.hero-strip p{color:rgba(255,255,255,.72);font-size:.82rem;margin-top:.3rem;}
+
+/* ── FIELDS ── */
+.field{margin-bottom:1rem;}
+.lbl{display:block;font-weight:600;font-size:.82rem;color:#334155;margin-bottom:.3rem;}
+.req{color:var(--red);}
+.fi{width:100%;border:2px solid #e2e8f0;border-radius:10px;padding:.65rem .9rem;
+    font-family:'Poppins',sans-serif;font-size:.87rem;color:#1e293b;background:#f8fafc;
+    outline:none;transition:border-color .2s,box-shadow .2s;}
+.fi:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(82,168,35,.13);background:#fff;}
+.fi.err{border-color:var(--red);}
+.et{font-size:.72rem;color:var(--red);margin-top:.25rem;display:none;}
+
+/* ── BUTTONS ── */
+.btn{width:100%;border:none;border-radius:12px;padding:.9rem;
+     font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;
+     cursor:pointer;display:flex;align-items:center;justify-content:center;
+     gap:.5rem;transition:transform .15s,box-shadow .15s;}
+.btn:hover{transform:translateY(-1px);}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+.btn-green{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;box-shadow:0 4px 16px rgba(82,168,35,.35);}
+.btn-navy{background:linear-gradient(135deg,var(--navy),#254e7a);color:#fff;box-shadow:0 4px 16px rgba(27,58,92,.25);}
+.btn-wa{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;box-shadow:0 4px 16px rgba(37,211,102,.35);}
+.btn-outline{background:#fff;border:2px solid #e2e8f0;color:var(--navy);box-shadow:none;}
+.btn-outline:hover{border-color:var(--navy);}
+.btn-red{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;box-shadow:0 4px 14px rgba(239,68,68,.3);}
+.spin{width:16px;height:16px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;
+      border-radius:50%;animation:sp .7s linear infinite;display:none;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── LOADING SCREEN ── */
+#screenLoading{text-align:center;padding:4rem 1rem;}
+.loader{width:52px;height:52px;border:5px solid #e2e8f0;border-top-color:var(--green);
+        border-radius:50%;animation:sp .85s linear infinite;margin:0 auto 1.1rem;}
+.loader-text{font-family:'Nunito',sans-serif;font-weight:900;color:var(--navy);font-size:1.05rem;}
+.loader-sub{font-size:.78rem;color:#94a3b8;margin-top:.3rem;}
+
+/* ── LOGIN INFO ROW ── */
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1rem;}
+.info-box{background:linear-gradient(135deg,var(--navy),#254e7a);border-radius:14px;padding:.9rem;text-align:center;}
+.ib-num{font-family:'Nunito',sans-serif;font-weight:900;color:var(--gold);font-size:2rem;line-height:1;}
+.ib-lbl{font-size:.68rem;color:rgba(255,255,255,.65);margin-top:.15rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+
+/* ── QUIZ SCREEN ── */
+.quiz-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.3rem;}
+.quiz-prog-lbl{font-size:.78rem;color:#64748b;font-weight:600;}
+.quiz-attempted{font-family:'Nunito',sans-serif;font-weight:900;color:var(--green);font-size:.82rem;}
+.prog-bar{background:#e2e8f0;border-radius:99px;height:7px;margin-bottom:.9rem;}
+.prog-fill{height:7px;border-radius:99px;background:linear-gradient(90deg,var(--green),#7dd44a);transition:width .4s ease;}
+
+.q-card{background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(27,58,92,.09);overflow:hidden;margin-bottom:.85rem;}
+.q-header{background:linear-gradient(135deg,var(--navy),#254e7a);padding:.85rem 1.1rem;display:flex;align-items:center;gap:.6rem;}
+.q-badge{background:var(--gold);color:var(--navy);font-family:'Nunito',sans-serif;font-weight:900;font-size:.75rem;padding:.22rem .65rem;border-radius:99px;}
+.q-student{color:rgba(255,255,255,.75);font-size:.78rem;font-family:'Nunito',sans-serif;font-weight:700;flex:1;padding-left:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.q-marks-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:.68rem;font-weight:600;padding:.18rem .55rem;border-radius:99px;white-space:nowrap;}
+.q-body{padding:1.1rem;}
+.q-text{font-weight:600;font-size:.92rem;color:#1e293b;line-height:1.6;margin-bottom:.9rem;}
+
+.options{display:flex;flex-direction:column;gap:.5rem;}
+.opt{display:flex;align-items:center;gap:.75rem;border:2px solid #e2e8f0;border-radius:11px;
+     padding:.65rem .9rem;cursor:pointer;transition:all .15s;background:#f8fafc;user-select:none;}
+.opt:hover:not(.selected){border-color:var(--navy);background:#f0f4ff;}
+.opt.selected{border-color:var(--blue);background:#eff6ff;}
+.opt.selected .opt-mark{background:var(--blue);border-color:var(--blue);color:#fff;}
+.opt-mark{width:28px;height:28px;border-radius:50%;border:2px solid #e2e8f0;flex-shrink:0;
+          display:flex;align-items:center;justify-content:center;
+          font-family:'Nunito',sans-serif;font-weight:900;font-size:.75rem;color:#94a3b8;transition:all .15s;}
+.opt-text{font-size:.85rem;color:#334155;line-height:1.4;flex:1;}
+
+.quiz-nav{display:flex;gap:.6rem;margin-top:.5rem;}
+.quiz-nav .btn{flex:1;padding:.78rem .5rem;font-size:.88rem;}
+
+.confirm-banner{background:#fffbeb;border:1.5px solid #fde68a;border-radius:11px;
+                padding:.7rem .9rem;font-size:.78rem;color:#78350f;
+                display:none;margin-bottom:.7rem;line-height:1.55;}
+
+/* ── REVIEW SCREEN ── */
+.review-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem;}
+.rs-card{background:#fff;border-radius:14px;padding:.85rem .7rem;text-align:center;box-shadow:0 2px 10px rgba(27,58,92,.07);}
+.rs-num{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.7rem;line-height:1;}
+.rs-num.c{color:var(--green);}
+.rs-num.w{color:var(--red);}
+.rs-num.s{color:var(--navy);}
+.rs-lbl{font-size:.65rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:.1rem;}
+
+.rev-item{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(27,58,92,.07);overflow:hidden;margin-bottom:.6rem;}
+.rev-item-hdr{padding:.65rem .9rem;display:flex;align-items:flex-start;gap:.6rem;}
+.rev-item-hdr.c{background:rgba(82,168,35,.07);border-left:4px solid var(--green);}
+.rev-item-hdr.w{background:rgba(239,68,68,.06);border-left:4px solid var(--red);}
+.rev-status{font-size:1.1rem;flex-shrink:0;margin-top:.05rem;}
+.rev-q{font-weight:600;font-size:.82rem;color:#1e293b;flex:1;line-height:1.45;}
+.rev-pts{font-family:'Nunito',sans-serif;font-weight:900;font-size:.78rem;border-radius:99px;
+         padding:.15rem .5rem;margin-left:auto;flex-shrink:0;white-space:nowrap;}
+.rev-pts.c{background:rgba(82,168,35,.12);color:var(--green2);}
+.rev-pts.w{background:rgba(239,68,68,.1);color:var(--red2);}
+.rev-opts{padding:.5rem .9rem .75rem;display:flex;flex-direction:column;gap:.28rem;}
+.rev-opt{display:flex;align-items:flex-start;gap:.5rem;padding:.32rem .45rem;border-radius:7px;font-size:.79rem;}
+.rev-opt.opt-c{background:rgba(82,168,35,.1);color:var(--green2);}
+.rev-opt.opt-wx{background:rgba(239,68,68,.09);color:var(--red2);}
+.rev-opt.opt-n{color:#64748b;}
+.rev-opt-ltr{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;
+             align-items:center;justify-content:center;font-family:'Nunito',sans-serif;
+             font-weight:900;font-size:.65rem;background:#e2e8f0;color:#64748b;}
+.rev-opt.opt-c .rev-opt-ltr{background:var(--green);color:#fff;}
+.rev-opt.opt-wx .rev-opt-ltr{background:var(--red);color:#fff;}
+
+/* ── SCORE SCREEN ── */
+.score-hero{background:linear-gradient(135deg,var(--navy),#254e7a);border-radius:18px;
+            padding:1.75rem 1.25rem;text-align:center;margin-bottom:1rem;
+            box-shadow:0 4px 24px rgba(27,58,92,.15);}
+.score-emoji{font-size:2.8rem;margin-bottom:.4rem;}
+.score-val{font-family:'Nunito',sans-serif;font-weight:900;color:var(--gold);font-size:3.4rem;line-height:1;}
+.score-out{color:rgba(255,255,255,.55);font-size:.82rem;margin-top:.2rem;}
+.score-name{font-family:'Nunito',sans-serif;font-weight:900;color:#fff;font-size:1.1rem;margin-top:.6rem;}
+.score-tag{display:inline-block;background:rgba(255,255,255,.12);border-radius:99px;
+           padding:.3rem .9rem;font-size:.74rem;color:rgba(255,255,255,.78);margin-top:.4rem;}
+
+/* ── LEADERBOARD ── */
+.lb-item{background:#fff;border-radius:14px;padding:.75rem .9rem;
+         box-shadow:0 2px 10px rgba(27,58,92,.07);display:flex;align-items:center;
+         gap:.75rem;margin-bottom:.45rem;animation:fadeUp .3s ease both;}
+.lb-rank{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+         justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:.82rem;flex-shrink:0;}
+.lb-rank.r1{background:linear-gradient(135deg,#f5a623,#e8921a);color:#fff;}
+.lb-rank.r2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;}
+.lb-rank.r3{background:linear-gradient(135deg,#cd7f32,#a0522d);color:#fff;}
+.lb-rank.rn{background:#f1f5f9;color:#64748b;}
+.lb-name{font-weight:600;font-size:.85rem;color:var(--navy);flex:1;}
+.lb-you{font-size:.58rem;background:var(--green);color:#fff;border-radius:99px;
+        padding:.08rem .4rem;margin-left:.3rem;vertical-align:middle;}
+.lb-score{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.15rem;color:var(--green);}
+.lb-score-sub{font-size:.62rem;color:#94a3b8;text-align:right;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+       background:#1e293b;color:#fff;padding:.55rem 1.2rem;border-radius:99px;
+       font-size:.78rem;font-weight:600;z-index:600;opacity:0;transition:opacity .2s;
+       pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* ── MISC ── */
+.sec-title{font-family:'Nunito',sans-serif;font-weight:900;color:var(--navy);font-size:.95rem;margin-bottom:.7rem;}
+.empty-state{text-align:center;padding:2rem 1rem;color:#94a3b8;font-size:.82rem;}
+.empty-state .em-i{font-size:2rem;margin-bottom:.4rem;}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <img src="cbdlogo.png" alt="College Buddy" class="nav-logo"
+         onerror="this.outerHTML='<span style=\'font-family:Nunito,sans-serif;font-weight:900;font-size:1rem;color:#1b3a5c\'>College<span style=\'color:#52a823\'>Buddy</span></span>'"/>
+    <div class="nav-title" id="navTitle">Quiz</div>
+    <div class="nav-badge" id="navBadge">📝</div>
+  </div>
+</nav>
+
+<!-- ══ SCREEN: LOADING ══ -->
+<div class="screen active" id="screenLoading">
+  <div class="loader"></div>
+  <div class="loader-text" id="loadText">Loading Quiz...</div>
+  <div class="loader-sub" id="loadSub">CSV file load ho rahi hai</div>
+</div>
+
+<!-- ══ SCREEN: ERROR ══ -->
+<div class="screen" id="screenError">
+  <div style="text-align:center;padding:3rem 1rem;">
+    <div style="font-size:3rem;margin-bottom:1rem;">⚠️</div>
+    <div style="font-family:'Nunito',sans-serif;font-weight:900;color:var(--navy);font-size:1.2rem;margin-bottom:.5rem;">Quiz Load Nahi Hua</div>
+    <p style="font-size:.82rem;color:#64748b;line-height:1.65;" id="errMsg">CSV file nahi mili.</p>
+  </div>
+</div>
+
+<!-- ══ SCREEN: LOGIN ══ -->
+<div class="screen" id="screenLogin">
+  <div class="hero-strip">
+    <div class="chip" id="loginChip">📝 Quiz</div>
+    <h1 id="loginH1">Start the <em>Quiz</em></h1>
+    <p>Apna naam aur number dalo — bilkul free!</p>
+  </div>
+
+  <div class="info-row">
+    <div class="info-box"><div class="ib-num" id="infoQ">—</div><div class="ib-lbl">Questions</div></div>
+    <div class="info-box"><div class="ib-num" id="infoM">—</div><div class="ib-lbl">Total Marks</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="field">
+        <label class="lbl">Full Name <span class="req">*</span></label>
+        <input type="text" id="iName" class="fi" placeholder="Apna pura naam likhein" autocomplete="name"/>
+        <p class="et" id="eName">Naam required hai.</p>
+      </div>
+      <div class="field" style="margin-bottom:1.4rem;">
+        <label class="lbl">Mobile Number <span class="req">*</span></label>
+        <input type="tel" id="iMob" class="fi" placeholder="10-digit number" maxlength="10" inputmode="numeric"/>
+        <p class="et" id="eMob">Valid 10-digit number chahiye.</p>
+      </div>
+      <button class="btn btn-green" id="loginBtn" onclick="handleLogin()">
+        <div class="spin" id="loginSpin"></div>
+        <span id="loginTxt">Start Quiz 🚀</span>
+      </button>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:.68rem;color:#94a3b8;margin-top:-.3rem;">Har question 10 marks · Koi negative marking nahi</p>
+</div>
+
+<!-- ══ SCREEN: QUIZ ══ -->
+<div class="screen" id="screenQuiz">
+  <div class="quiz-topbar">
+    <span class="quiz-prog-lbl">Question <span id="qCur">1</span> of <span id="qTot">—</span></span>
+    <span class="quiz-attempted" id="qAtt">0 attempted</span>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge" id="qBadge">Q1</span>
+      <span class="q-student" id="qStudentName">—</span>
+      <span class="q-marks-badge">10 marks</span>
+    </div>
+    <div class="q-body">
+      <div class="q-text" id="qText">—</div>
+      <div class="options" id="optsCont"></div>
+    </div>
+  </div>
+
+  <div class="confirm-banner" id="confirmBanner">
+    ⚠️ <strong>Aapne <span id="unattempted">0</span> questions attempt nahi kiye.</strong>
+    Submit karne ke baad wapas nahi aa sakte. Confirm karo?
+  </div>
+
+  <div class="quiz-nav">
+    <button class="btn btn-outline" id="btnPrev" onclick="navQ(-1)">← Prev</button>
+    <button class="btn btn-green"   id="btnNext" onclick="navQ(1)">Next →</button>
+    <button class="btn btn-red"     id="btnSub"  onclick="onSubmitClick()" style="display:none;">Submit ✓</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: REVIEW ══ -->
+<div class="screen" id="screenReview">
+  <div class="hero-strip">
+    <div class="chip">📊 Result</div>
+    <h1>Quiz <em>Review</em></h1>
+    <p id="revNameLine">—</p>
+  </div>
+  <div class="review-summary">
+    <div class="rs-card"><div class="rs-num c" id="rsC">—</div><div class="rs-lbl">Correct</div></div>
+    <div class="rs-card"><div class="rs-num w" id="rsW">—</div><div class="rs-lbl">Wrong</div></div>
+    <div class="rs-card"><div class="rs-num s" id="rsS">—</div><div class="rs-lbl">Score</div></div>
+  </div>
+  <div id="revList"></div>
+  <button class="btn btn-navy" onclick="goToScore()">View Score &amp; Leaderboard 🏆</button>
+</div>
+
+<!-- ══ SCREEN: SCORE + LEADERBOARD ══ -->
+<div class="screen" id="screenScore">
+  <div class="score-hero">
+    <div class="score-emoji" id="sEmoji">🎉</div>
+    <div class="score-val"   id="sVal">—</div>
+    <div class="score-out"   id="sOut">—</div>
+    <div class="score-name"  id="sName">—</div>
+    <div class="score-tag"   id="sTag">—</div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;">
+    <div class="sec-title" style="margin-bottom:0;">🏅 Leaderboard</div>
+    <button onclick="loadLeaderboard()" style="background:none;border:1.5px solid #e2e8f0;border-radius:7px;padding:.28rem .65rem;font-size:.7rem;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito',sans-serif;">⟳ Refresh</button>
+  </div>
+  <div id="lbCont"><div class="empty-state"><div class="em-i">⏳</div>Loading...</div></div>
+
+  <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.65rem;">
+    <button class="btn btn-wa" onclick="shareWA()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.553 4.121 1.522 5.857L.058 23.5l5.818-1.525A11.939 11.939 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.804 9.804 0 0 1-5.012-1.369l-.358-.213-3.724.976.994-3.63-.234-.373A9.79 9.79 0 0 1 2.182 12C2.182 6.578 6.578 2.182 12 2.182c5.421 0 9.818 4.396 9.818 9.818 0 5.421-4.397 9.818-9.818 9.818z"/></svg>
+      Doston ko Challenge Karo! 📲
+    </button>
+    <button class="btn btn-outline" onclick="showScreen('screenReview')" style="font-size:.85rem;">← Review Dekhein</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+//  CONFIG — replace with your script URL
+// ════════════════════════════════════════
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxhmC-j7Onu3Cp13zZNs1EC5yaQYszL4Gj7BahK0MOGc95vXCQM2-m4k6l9mVu-kjWoGw/exec';
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+let quizName    = '';
+let questions   = [];
+let answers     = {};   // { qIndex: 1-4 }
+let currentQ    = 0;
+let studentName = '';
+let studentMob  = '';
+let finalScore  = 0;
+let finalCorrect= 0;
+let submitPending = false;
+
+// ════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  quizName = (params.get('q') || '').toLowerCase().trim();
+
+  if (!quizName) {
+    showError('URL mein <code>?q=filename</code> parameter chahiye.<br>Example: <code>index.html?q=dsa</code>');
+    return;
+  }
+
+  document.getElementById('navTitle').textContent = quizName.toUpperCase() + ' Quiz';
+  document.getElementById('navBadge').textContent = '📝 ' + quizName.toUpperCase();
+
+  try {
+    setLoad('Loading ' + quizName.toUpperCase() + ' Quiz...', 'data/' + quizName + '.csv pad rahi hai');
+    const csv = await fetchCSV('data/' + quizName + '.csv');
+    questions  = parseCSV(csv);
+    if (questions.length === 0) throw new Error('CSV mein koi valid question nahi mila.');
+    showLoginScreen();
+  } catch (err) {
+    showError('File load error: <strong>' + esc(err.message) + '</strong><br><br>' +
+              'Ensure <code>data/' + esc(quizName) + '.csv</code> exists on your server.');
+  }
+});
+
+// ════════════════════════════════════════
+//  CSV
+// ════════════════════════════════════════
+async function fetchCSV(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' — file not found: ' + path);
+  return res.text();
+}
+
+function parseCSV(raw) {
+  const lines = raw.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const qs = [];
+  // Auto-detect header: if first col of row 0 looks like text heading, skip
+  let start = 0;
+  const firstCols = splitRow(lines[0]);
+  if (firstCols.length > 0 && isNaN(parseInt(firstCols[5])) && !/^\d/.test(firstCols[0])) start = 1;
+
+  for (let i = start; i < lines.length; i++) {
+    const c = splitRow(lines[i]);
+    if (c.length < 6) continue;
+    const qText = c[0].trim();
+    const opts  = [c[1].trim(), c[2].trim(), c[3].trim(), c[4].trim()];
+    const ans   = parseInt(c[5].trim(), 10);
+    if (!qText || isNaN(ans) || ans < 1 || ans > 4) continue;
+    qs.push({ q: qText, opts, ans });
+  }
+  return qs;
+}
+
+function splitRow(row) {
+  const out = []; let cur = '', q = false;
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i];
+    if (ch === '"')          { q = !q; continue; }
+    if (ch === ',' && !q)   { out.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+// ════════════════════════════════════════
+//  SCREEN UTILS
+// ════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function setLoad(main, sub) {
+  document.getElementById('loadText').textContent = main;
+  document.getElementById('loadSub').textContent  = sub;
+}
+function showError(msg) {
+  document.getElementById('errMsg').innerHTML = msg;
+  showScreen('screenError');
+}
+function showLoginScreen() {
+  document.getElementById('loginChip').textContent = '📝 ' + quizName.toUpperCase() + ' Quiz';
+  document.getElementById('loginH1').innerHTML     = 'Start the <em>' + esc(quizName.toUpperCase()) + '</em> Quiz';
+  document.getElementById('infoQ').textContent     = questions.length;
+  document.getElementById('infoM').textContent     = questions.length * 10;
+  showScreen('screenLogin');
+}
+
+// ════════════════════════════════════════
+//  LOGIN
+// ════════════════════════════════════════
+async function handleLogin() {
+  const name   = document.getElementById('iName').value.trim();
+  const mobile = document.getElementById('iMob').value.trim();
+  let ok = true;
+
+  const se = (id, v) => document.getElementById(id).style.display = v ? 'block' : 'none';
+  const fe = (id, v) => document.getElementById(id).classList.toggle('err', v);
+
+  if (!name)                     { fe('iName', true);  se('eName', true);  ok = false; } else { fe('iName', false);  se('eName', false); }
+  if (!/^\d{10}$/.test(mobile))  { fe('iMob',  true);  se('eMob',  true);  ok = false; } else { fe('iMob',  false);  se('eMob',  false); }
+  if (!ok) return;
+
+  setBtnState('loginBtn', 'loginSpin', 'loginTxt', true);
+
+  try {
+    const url  = SHEET_URL + '?action=checkSubmission&quiz=' + enc(quizName) + '&mobile=' + enc(mobile);
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    if (data.alreadySubmitted) {
+      studentName  = data.name  || name;
+      studentMob   = mobile;
+      finalScore   = data.score || 0;
+      finalCorrect = data.correct || 0;
+      fillScoreScreen();
+      showScreen('screenScore');
+      loadLeaderboard();
+      showToast('Aapne pehle yeh quiz de diya hai!');
+    } else {
+      studentName = name;
+      studentMob  = mobile;
+      startQuiz();
+    }
+  } catch (_) {
+    // Network fail — let them attempt anyway
+    studentName = name;
+    studentMob  = mobile;
+    startQuiz();
+  }
+
+  setBtnState('loginBtn', 'loginSpin', 'loginTxt', false);
+}
+
+function setBtnState(btnId, spinId, txtId, loading) {
+  document.getElementById(btnId).disabled          = loading;
+  document.getElementById(spinId).style.display    = loading ? 'block' : 'none';
+  document.getElementById(txtId).style.display     = loading ? 'none'  : 'inline';
+}
+
+// ════════════════════════════════════════
+//  QUIZ ENGINE
+// ════════════════════════════════════════
+function startQuiz() {
+  currentQ      = 0;
+  answers       = {};
+  submitPending = false;
+  renderQ(0);
+  showScreen('screenQuiz');
+}
+
+function renderQ(idx) {
+  const q = questions[idx];
+  const n = questions.length;
+  currentQ = idx;
+
+  document.getElementById('qCur').textContent         = idx + 1;
+  document.getElementById('qTot').textContent         = n;
+  document.getElementById('qBadge').textContent       = 'Q' + (idx + 1);
+  document.getElementById('qText').textContent        = q.q;
+  document.getElementById('qStudentName').textContent = studentName;
+  document.getElementById('qAtt').textContent         = Object.keys(answers).length + ' attempted';
+  document.getElementById('progFill').style.width     = ((idx + 1) / n * 100) + '%';
+  document.getElementById('confirmBanner').style.display = 'none';
+  submitPending = false;
+
+  // Options
+  const LABELS = ['A','B','C','D'];
+  const cont = document.getElementById('optsCont');
+  cont.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    if (!opt) return;
+    const num = i + 1;
+    const sel = answers[idx] === num;
+    const d   = document.createElement('div');
+    d.className = 'opt' + (sel ? ' selected' : '');
+    d.innerHTML = `<div class="opt-mark">${LABELS[i]}</div><div class="opt-text">${esc(opt)}</div>`;
+    d.onclick   = () => { answers[idx] = num; renderQ(idx); };
+    cont.appendChild(d);
+  });
+
+  // Nav
+  document.getElementById('btnPrev').disabled          = idx === 0;
+  const isLast = idx === n - 1;
+  document.getElementById('btnNext').style.display     = isLast ? 'none'  : 'flex';
+  document.getElementById('btnSub').style.display      = isLast ? 'flex'  : 'none';
+  document.getElementById('btnSub').textContent        = 'Submit ✓';
+  document.getElementById('btnSub').onclick            = onSubmitClick;
+}
+
+function navQ(dir) {
+  const next = currentQ + dir;
+  if (next >= 0 && next < questions.length) renderQ(next);
+}
+
+function onSubmitClick() {
+  const unattempted = questions.length - Object.keys(answers).length;
+  if (unattempted > 0 && !submitPending) {
+    document.getElementById('unattempted').textContent = unattempted;
+    document.getElementById('confirmBanner').style.display = 'block';
+    document.getElementById('btnSub').textContent = 'Confirm Submit ✓';
+    submitPending = true;
+    return;
+  }
+  doSubmit();
+}
+
+async function doSubmit() {
+  // Score
+  let correct = 0;
+  questions.forEach((q, i) => { if (answers[i] === q.ans) correct++; });
+  finalScore   = correct * 10;
+  finalCorrect = correct;
+
+  buildReview(correct);
+  fillScoreScreen();
+  submitToSheet(correct).catch(console.error);
+  await loadLeaderboard();
+  showScreen('screenReview');
+}
+
+// ════════════════════════════════════════
+//  REVIEW
+// ════════════════════════════════════════
+function buildReview(correct) {
+  const wrong = questions.length - correct;
+  document.getElementById('rsC').textContent         = correct;
+  document.getElementById('rsW').textContent         = wrong;
+  document.getElementById('rsS').textContent         = finalScore;
+  document.getElementById('revNameLine').textContent = studentName + ' ka result';
+
+  const LABELS = ['A','B','C','D'];
+  const list   = document.getElementById('revList');
+  list.innerHTML = '';
+
+  questions.forEach((q, i) => {
+    const sel       = answers[i] || null;
+    const isCorrect = sel === q.ans;
+    let optsHtml    = '';
+
+    q.opts.forEach((opt, oi) => {
+      if (!opt) return;
+      const num = oi + 1;
+      let cls = 'rev-opt opt-n', tag = '';
+      if (num === q.ans)                          { cls = 'rev-opt opt-c'; tag = ' ✓ Correct'; }
+      if (num === sel && !isCorrect)              { cls = 'rev-opt opt-wx'; tag = ' ✗ Aapka answer'; }
+      if (num === sel && isCorrect)               { cls = 'rev-opt opt-c'; tag = ' ✓ Correct (Aapka answer)'; }
+      optsHtml += `<div class="${cls}">
+        <div class="rev-opt-ltr">${LABELS[oi]}</div>
+        <div>${esc(opt)}${tag ? '<strong>' + tag + '</strong>' : ''}</div>
+      </div>`;
+    });
+
+    if (!sel) optsHtml += `<div class="rev-opt opt-wx"><div class="rev-opt-ltr">!</div><div>Attempt nahi kiya</div></div>`;
+
+    const item = document.createElement('div');
+    item.className = 'rev-item';
+    item.style.animationDelay = (i * .03) + 's';
+    item.innerHTML = `
+      <div class="rev-item-hdr ${isCorrect ? 'c' : 'w'}">
+        <span class="rev-status">${isCorrect ? '✅' : '❌'}</span>
+        <span class="rev-q">Q${i+1}. ${esc(q.q)}</span>
+        <span class="rev-pts ${isCorrect ? 'c' : 'w'}">${isCorrect ? '+10' : '0'}</span>
+      </div>
+      <div class="rev-opts">${optsHtml}</div>`;
+    list.appendChild(item);
+  });
+}
+
+// ════════════════════════════════════════
+//  SCORE SCREEN
+// ════════════════════════════════════════
+function fillScoreScreen() {
+  const total = questions.length * 10;
+  const pct   = total > 0 ? Math.round(finalScore / total * 100) : 0;
+  let emoji = '😐', tag = 'Keep trying!';
+  if      (pct >= 90) { emoji = '🏆'; tag = 'Outstanding! Class Topper! 🌟'; }
+  else if (pct >= 75) { emoji = '🎉'; tag = 'Excellent Performance!'; }
+  else if (pct >= 60) { emoji = '👍'; tag = 'Good Job! Keep it up'; }
+  else if (pct >= 40) { emoji = '📚'; tag = 'Thoda aur padhna padega'; }
+  else                { emoji = '💪'; tag = 'Practice more — you got this!'; }
+
+  document.getElementById('sEmoji').textContent = emoji;
+  document.getElementById('sVal').textContent   = finalScore;
+  document.getElementById('sOut').textContent   = 'out of ' + total + ' marks (' + pct + '%)';
+  document.getElementById('sName').textContent  = studentName;
+  document.getElementById('sTag').textContent   = tag;
+}
+
+function goToScore() { showScreen('screenScore'); }
+
+// ════════════════════════════════════════
+//  LEADERBOARD
+// ════════════════════════════════════════
+async function loadLeaderboard() {
+  const cont = document.getElementById('lbCont');
+  cont.innerHTML = '<div class="empty-state"><div class="em-i">⏳</div>Loading scores...</div>';
+  try {
+    const res  = await fetch(SHEET_URL + '?action=getLeaderboard&quiz=' + enc(quizName));
+    const data = await res.json();
+    if (!data.scores || data.scores.length === 0) {
+      cont.innerHTML = '<div class="empty-state"><div class="em-i">📭</div>Abhi koi score nahi hai.</div>';
+      return;
+    }
+    const sorted = [...data.scores].sort((a, b) => b.score - a.score);
+    cont.innerHTML = '';
+    sorted.forEach((s, i) => {
+      const isYou   = s.mobile === studentMob;
+      const rankCls = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn';
+      const d = document.createElement('div');
+      d.className = 'lb-item';
+      d.style.animationDelay = (i * .04) + 's';
+      d.innerHTML = `
+        <div class="lb-rank ${rankCls}">${i + 1}</div>
+        <div class="lb-name">${esc(s.name)}${isYou ? '<span class="lb-you">You</span>' : ''}</div>
+        <div style="text-align:right;">
+          <div class="lb-score">${s.score}</div>
+          <div class="lb-score-sub">/ ${questions.length * 10}</div>
+        </div>`;
+      cont.appendChild(d);
+    });
+  } catch (_) {
+    cont.innerHTML = '<div class="empty-state"><div class="em-i">⚠️</div>Leaderboard load nahi hua.</div>';
+  }
+}
+
+// ════════════════════════════════════════
+//  SUBMIT TO SHEET
+// ════════════════════════════════════════
+async function submitToSheet(correct) {
+  const payload = {
+    action:    'submitQuiz',
+    quiz:      quizName,
+    name:      studentName,
+    mobile:    studentMob,
+    score:     finalScore,
+    correct,
+    total:     questions.length,
+    timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    answers:   JSON.stringify(answers),
+  };
+  await fetch(SHEET_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+// ════════════════════════════════════════
+//  WHATSAPP SHARE
+// ════════════════════════════════════════
+function shareWA() {
+  const base  = window.location.href.split('?')[0];
+  const link  = base + '?q=' + enc(quizName);
+  const total = questions.length * 10;
+  const pct   = total > 0 ? Math.round(finalScore / total * 100) : 0;
+  const msg   = `🎯 Maine *${quizName.toUpperCase()}* Quiz diya!\n\n` +
+                `📊 Score: *${finalScore}/${total}* (${pct}%)\n` +
+                `👤 ${studentName}\n\n` +
+                `Kya tum beat kar sakte ho? 🔥\nTry karo: ${link}`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function enc(s) { return encodeURIComponent(s); }
+</script>
+</body>
+</html>
