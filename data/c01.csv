@@ -1,0 +1,11 @@
+Question,Option1,Option2,Option3,Option4,Answer
+What is C language?,Markup language,Programming language,Database,Operating system,Programming language
+Who developed C language?,James Gosling,Dennis Ritchie,Bjarne Stroustrup,Guido van Rossum,Dennis Ritchie
+What is a variable?,Function name,Storage location,Loop,Operator,Storage location
+What is a data type?,Type of loop,Type of variable data,Function,Header file,Type of variable data
+Which is a valid data type?,int,loop,main,printf,int
+What is printf()?,Input function,Output function,Loop,Operator,Output function
+What is scanf()?,Output function,Input function,Loop,Operator,Input function
+What is a loop?,Condition,Repetition,Function,Variable,Repetition
+Which is a loop type?,if,for,printf,scanf,for
+What is if statement?,Loop,Decision making,Function,Array,Decision making
